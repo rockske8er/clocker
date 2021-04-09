@@ -22,7 +22,7 @@ import {
  import { FiEye, FiEyeOff, FiLock, FiMail } from 'react-icons/fi'
 
 import { Logo } from '../components'
-import firebase from '../config/Firebase'
+import firebase, { PersistenceMode } from '../config/Firebase'
 
 const validationSchema = yup.object().shape({
     email: yup.string().email('E-mail inválido').required('Preenchimento obrigatório'),
@@ -43,6 +43,8 @@ export default function Login() {
         isSubmitting
     } = useFormik({
         onSubmit: async ({email , password }) => {
+
+            firebase.auth().setPersistence(PersistenceMode)
             try{
                 const userData =  await firebase.auth()
                 .signInWithEmailAndPassword(email, password);
@@ -59,13 +61,18 @@ export default function Login() {
         }
     })
 
+    useEffect(() => {
+        console.log('Sessao Ativa', firebase.auth().currentUser)
+    }, [])
+
     const [isVisible, setIsVisible] = useState(false);
 
     const handleClick = () => setIsVisible(!isVisible);
 
     return (
-        <Container  centerContent>
+        <Container mt={10} centerContent>
             <Logo />
+
             <Box mb={8} mt={8}>
                 <Text>Crie sua agenda compartilhada</Text>
             </Box>
