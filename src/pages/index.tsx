@@ -4,10 +4,15 @@ import { Login, Agenda } from './../components'
 import { Container } from '@chakra-ui/layout';
 import { Spinner } from '@chakra-ui/spinner';
 
+
+type UserProps = {
+    loading: boolean,
+    user: boolean | any
+}
 export default function Home(){
     //const authenticatedUser = firebase.auth().currentUser;
 
-    const [isAutheticated, setIsAutheticated] = useState({
+    const [isAutheticated, setIsAutheticated] = useState<UserProps>({
         loading: true,
         user: false
     })
