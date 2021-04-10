@@ -1,80 +1,84 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
+import Link from 'next/link'
 import { useFormik } from 'formik'
 import * as yup from 'yup'
 
 import {
     Container,
     Box,
+    Input,
+    Button,
+    Text,
     FormControl,
     FormLabel,
     FormHelperText,
-    Text,
-    Input,
     InputGroup,
     InputRightElement,
-    InputLeftElement,
-    Button,
-    InputLeftAddon
+    InputLeftElement
  } from '@chakra-ui/react'
 
  import { Icon } from '@chakra-ui/icons'
  import { FiEye, FiEyeOff, FiLock, FiMail } from 'react-icons/fi'
 
-import { Logo } from '../components'
+import { Logo } from './../Logo'
+import firebase, { PersistenceMode } from '../../config/Firebase'
 
 const validationSchema = yup.object().shape({
     email: yup.string().email('E-mail inválido').required('Preenchimento obrigatório'),
     password: yup.string().required('Preenchimento obrigatório'),
-    username: yup.string().required('Preenchimento obrigatório'),
 })
 
-import firebase from '../config/Firebase'
+export const Login = () => {
 
-export default function Home() {
+    const router = useRouter()
 
-const {
-    isSubmitting,
-    values,
-    handleBlur,
-    handleChange,
-    handleSubmit,
-    errors,
-    touched
-} = useFormik({
-    initialValues: {
-        email: '',
-        password: '',
-        username: ''
-    },
-    validationSchema,
-    onSubmit: async ({email , password, username}) => {
-        try{
-            const userData =  await firebase.auth()
-            .createUserWithEmailAndPassword(email, password);
-            console.log(userData)
-        }catch(e){
-            console.log('Error', e)
+    const {
+        values,
+        errors,
+        touched,
+        handleChange,
+        handleBlur,
+        handleSubmit,
+        isSubmitting
+    } = useFormik({
+        onSubmit: async ({email , password }) => {
+
+            firebase.auth().setPersistence(PersistenceMode)
+            try{
+                const userData =  await firebase.auth()
+                .signInWithEmailAndPassword(email, password);
+                console.log(userData)
+            }catch(e){
+                console.log('Error', e)
+            }
+
+        },
+        validationSchema,
+        initialValues: {
+            email: '',
+            password: ''
         }
+    })
 
-    }
-
-})
+    useEffect(() => {
+        console.log('Sessao Ativa', firebase.auth().currentUser)
+    }, [])
 
     const [isVisible, setIsVisible] = useState(false);
+
     const handleClick = () => setIsVisible(!isVisible);
 
-  return (
-      <Container mt={10} centerContent>
-          <Logo />
+    return (
+        <Container mt={10} centerContent>
+            <Logo />
 
-          <Box mt={'8'} mb={'8'}>
-            <Text>Crie sua agenda compartilhada</Text>
-          </Box>
+            <Box mb={8} mt={8}>
+                <Text>Crie sua agenda compartilhada</Text>
+            </Box>
 
-          <Box>
-
-            <form onSubmit={handleSubmit}>
-
+            <Box>
+                <form onSubmit={handleSubmit}>
 
 
             <FormControl id="email" mt={'8'} isRequired>
@@ -101,7 +105,7 @@ const {
 
             </FormControl>
 
-            <FormControl id="password" mt={'8'}>
+                <FormControl id="password" mt={'8'}>
                 <FormLabel>Senha</FormLabel>
                 <InputGroup alignItems="center">
                     <InputLeftElement>
@@ -134,37 +138,18 @@ const {
 
             </FormControl>
 
-            <FormControl id="username" mt={'8'} >
-                <InputGroup  size={'lg'}>
-                    <InputLeftAddon children={'clocker.work/'} />
-                    <Input
-                        name="username"
-                        size={'lg'}
-                        type="username"
-                        placeholder="username"
-                        value={values.username}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                    />
-                </InputGroup>
 
-                {
-                    touched.username && <FormHelperText textColor={'red.400'}>{errors.username}</FormHelperText>
-                }
+                    <Button
+                    colorScheme="blue"
+                    w={'full'}
+                    type="submit"
+                    isLoading={isSubmitting}>Entrar
+                    </Button>
+  </form>
+            </Box>
 
-                </FormControl>
-            <Button
-                type={'submit'}
-                mt="8" w={'full'} size={'lg'} colorScheme='blue'
-                isLoading={isSubmitting}
-
-                >
-                Entrar
-            </Button>
-            </form>
-          </Box>
-
-
-      </Container>
-  )
+            <Link href="/signup">Ainda não tem uma conta? Cadastre-se</Link>
+        </Container>
+    )
 }
+
